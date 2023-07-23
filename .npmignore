@@ -1,0 +1,8 @@
+.DS_Store
+tsconfig.json
+*.lock
+*.lock*-lock.json
+node_modules/
+pnpm-global/
+.*
+src
