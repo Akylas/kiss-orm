@@ -1,7 +1,7 @@
 {
-  "name": "kiss-orm",
+  "name": "@akylas/kiss-orm",
   "description": "An extremely simple and explicit ORM for TypeScript",
-  "repository": "github:Seb-C/kiss-orm",
+  "repository": "github:Akylas/kiss-orm",
   "homepage": "https://github.com/Seb-C/kiss-orm",
   "license": "MIT",
   "author": "Sébastien Caparros",
