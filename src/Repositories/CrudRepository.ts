@@ -33,7 +33,7 @@ export default class CrudRepository<Model, ValidAttributes = any, PrimaryKeyType
 		this.scope = scope;
 	}
 
-	public async get(primaryKeyValue: PrimaryKeyType): Promise<Model> {
+	public async get(primaryKeyValue: PrimaryKeyType, {postfix, select }:{postfix?: SqlQuery, select?: SqlQuery} ={}): Promise<Model> {
 		const filters: SqlQuery[] = [
 			sql`${new QueryIdentifier(this.primaryKey)} = ${primaryKeyValue}`,
 		];
@@ -41,10 +41,15 @@ export default class CrudRepository<Model, ValidAttributes = any, PrimaryKeyType
 			filters.push(sql`(${this.scope})`);
 		}
 
+		const postfixClause = postfix
+			? sql`${postfix}`:sql``;
+			const selectClause = select
+				? sql`${select}`:sql`*`;
 		const results = await this.database.query(sql`
-			SELECT *
+			SELECT ${selectClause}
 			FROM ${new QueryIdentifier(this.table)}
-			WHERE ${SqlQuery.join(filters, sql` AND `)};
+			WHERE ${SqlQuery.join(filters, sql` AND `)}
+			${postfixClause};
 		`);
 
 		if (results.length === 0) {
@@ -57,25 +62,27 @@ export default class CrudRepository<Model, ValidAttributes = any, PrimaryKeyType
 		return this.createModelFromAttributes(results[0]);
 	}
 
-	public async search(where: SqlQuery|null = null, orderBy: SqlQuery|null = null): Promise<ReadonlyArray<Model>> {
+	public async search({postfix, where, orderBy, select }:{postfix?: SqlQuery, where?: SqlQuery, orderBy?: SqlQuery, select?: SqlQuery} ={} ): Promise<ReadonlyArray<Model>> {
 		const filters: SqlQuery[] = [];
-		if (this.scope !== null) {
+		if (this.scope ) {
 			filters.push(sql`(${this.scope})`);
 		}
-		if (where !== null) {
+		if (where ) {
 			filters.push(sql`(${where})`);
 		}
 
-		const whereClause = filters.length === 0
-			? sql``
-			: sql`WHERE ${SqlQuery.join(filters, sql` AND `)}`;
-		const orderByClause = orderBy === null
-			? sql``
-			: sql`ORDER BY ${orderBy}`;
+		const whereClause = filters.length !== 0
+			? sql`WHERE ${SqlQuery.join(filters, sql` AND `)}` : sql``;
+		const orderByClause = orderBy
+			? sql`ORDER BY ${orderBy}`: sql``;
+		const postfixClause = postfix
+			? sql`${postfix}`:sql``;
+		const selectClause = select
+			? sql`${select}`:sql`*`;
 
 		const results = await this.database.query(sql`
-			SELECT *
-			FROM ${new QueryIdentifier(this.table)}
+			SELECT ${selectClause}
+			FROM ${new QueryIdentifier(this.table)} ${postfixClause}
 			${whereClause}
 			${orderByClause}
 		`);
