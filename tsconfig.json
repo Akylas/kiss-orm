@@ -4,8 +4,9 @@
     "declarationDir": "./dist",
     "outDir": "./dist",
     "allowJs": false,
-    "target": "es5",
-    "module": "commonjs",
+    "target": "es2020",
+    "module": "esnext",
+    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "lib": [
       "es2015",
