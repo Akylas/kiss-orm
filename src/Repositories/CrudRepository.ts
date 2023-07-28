@@ -118,7 +118,7 @@ export default class CrudRepository<Model, ValidAttributes = any, PrimaryKeyType
 
 				return this.createModelFromAttributes(results[0]);
 			} else {
-				return this.createModelFromAttributes(data);
+				return this.createModelFromAttributes(data || attributes);
 			}
 		});
 	}
