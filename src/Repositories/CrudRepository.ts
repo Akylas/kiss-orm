@@ -6,11 +6,13 @@ import QueryIdentifier from '../Queries/QueryIdentifier';
 
 const sql = SqlQuery.createFromTemplateString;
 
-export default class CrudRepository<Model, ValidAttributes = any, PrimaryKeyType = any> {
+export type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
+export type RequiredModel<T> = {[K in RequiredKeys<T>] : T[K]}
+export default class CrudRepository<Model, ValidAttributes = RequiredModel<Model>, PrimaryKeyType = any> {
 	protected readonly database: DatabaseInterface;
 	protected readonly table: string;
 	protected readonly primaryKey: string;
-	protected readonly model: new (attributes: Required<ValidAttributes>) => Model;
+	protected readonly model: new (attributes: RequiredModel<ValidAttributes>) => Model;
 	protected readonly scope: SqlQuery|null;
 
 	constructor({
@@ -23,7 +25,7 @@ export default class CrudRepository<Model, ValidAttributes = any, PrimaryKeyType
 		database: DatabaseInterface,
 		table: string,
 		primaryKey: string,
-		model: new (attributes: Required<ValidAttributes>) => Model,
+		model: new (attributes: RequiredModel<ValidAttributes>) => Model,
 		scope?: SqlQuery|null,
 	}) {
 		this.database = database;
@@ -94,7 +96,7 @@ export default class CrudRepository<Model, ValidAttributes = any, PrimaryKeyType
 		);
 	}
 
-	public async create(attributes: Required<ValidAttributes>): Promise<Model> {
+	public async create(attributes: RequiredModel<ValidAttributes>): Promise<Model> {
 		return this.database.sequence(async (sequenceDb: DatabaseInterface): Promise<Model> => {
 			const entries = Object.entries(attributes);
 			const fields = entries.map(([key, _]: [string, any]) => sql`${new QueryIdentifier(key)}`);
@@ -168,7 +170,7 @@ export default class CrudRepository<Model, ValidAttributes = any, PrimaryKeyType
 		`);
 	}
 
-	protected async createModelFromAttributes(attributes: Required<ValidAttributes>|Model): Promise<Model> {
+	protected async createModelFromAttributes(attributes: RequiredModel<ValidAttributes>|Model): Promise<Model> {
 		const model = Object.create(this.model.prototype);
 		Object.assign(model, attributes);
 		return model;
