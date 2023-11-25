@@ -8,11 +8,11 @@ const sql = SqlQuery.createFromTemplateString;
 
 export type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
 export type RequiredModel<T> = {[K in RequiredKeys<T>] : T[K]}
-export default class CrudRepository<Model, ValidAttributes = RequiredModel<Model>, PrimaryKeyType = any> {
+export default class CrudRepository<Model, ValidAttributes = Model, PrimaryKeyType = any> {
 	protected readonly database: DatabaseInterface;
 	protected readonly table: string;
 	protected readonly primaryKey: string;
-	protected readonly model: new (attributes: RequiredModel<ValidAttributes>) => Model;
+	protected readonly model: new (attributes: ValidAttributes) => Model;
 	protected readonly scope: SqlQuery|null;
 
 	constructor({
@@ -25,7 +25,7 @@ export default class CrudRepository<Model, ValidAttributes = RequiredModel<Model
 		database: DatabaseInterface,
 		table: string,
 		primaryKey: string,
-		model: new (attributes: RequiredModel<ValidAttributes>) => Model,
+		model: new (attributes: ValidAttributes) => Model,
 		scope?: SqlQuery|null,
 	}) {
 		this.database = database;
@@ -96,9 +96,9 @@ export default class CrudRepository<Model, ValidAttributes = RequiredModel<Model
 		);
 	}
 
-	public async create(attributes: RequiredModel<ValidAttributes>): Promise<Model> {
+	public async create(attributes: ValidAttributes): Promise<Model> {
 		return this.database.sequence(async (sequenceDb: DatabaseInterface): Promise<Model> => {
-			const entries = Object.entries(attributes);
+			const entries = Object.entries(attributes as any);
 			const fields = entries.map(([key, _]: [string, any]) => sql`${new QueryIdentifier(key)}`);
 			const values = entries.map(([_, val]: [string, any]) => sql`${val}`);
 
@@ -170,7 +170,7 @@ export default class CrudRepository<Model, ValidAttributes = RequiredModel<Model
 		`);
 	}
 
-	protected async createModelFromAttributes(attributes: RequiredModel<ValidAttributes>|Model): Promise<Model> {
+	protected async createModelFromAttributes(attributes: ValidAttributes|Model): Promise<Model> {
 		const model = Object.create(this.model.prototype);
 		Object.assign(model, attributes);
 		return model;
