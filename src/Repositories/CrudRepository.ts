@@ -64,7 +64,7 @@ export default class CrudRepository<Model, ValidAttributes = Model, PrimaryKeyTy
 		return this.createModelFromAttributes(results[0]);
 	}
 
-	public async search({postfix, where, orderBy, select }:{postfix?: SqlQuery, where?: SqlQuery, orderBy?: SqlQuery, select?: SqlQuery} ={} ): Promise<ReadonlyArray<Model>> {
+	public async search({postfix, where, orderBy, select }:{postfix?: SqlQuery, where?: SqlQuery, orderBy?: SqlQuery, select?: SqlQuery} ={} ): Promise<Array<Model>> {
 		const filters: SqlQuery[] = [];
 		if (this.scope ) {
 			filters.push(sql`(${this.scope})`);
