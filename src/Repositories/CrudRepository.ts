@@ -9,9 +9,9 @@ const sql = SqlQuery.createFromTemplateString;
 export type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T];
 export type RequiredModel<T> = {[K in RequiredKeys<T>] : T[K]}
 export default class CrudRepository<Model, ValidAttributes = Model, PrimaryKeyType = any> {
-	protected readonly database: DatabaseInterface;
-	protected readonly table: string;
-	protected readonly primaryKey: string;
+	readonly database: DatabaseInterface;
+	readonly table: string;
+	readonly primaryKey: string;
 	protected readonly model: new (attributes: ValidAttributes) => Model;
 	protected readonly scope: SqlQuery|null;
 
