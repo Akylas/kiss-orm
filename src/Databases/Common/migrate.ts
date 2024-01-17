@@ -6,7 +6,7 @@ const sql = SqlQuery.createFromTemplateString;
 
 export default async (
 	database: DatabaseInterface,
-	migrations: { [key: string]: SqlQuery },
+	migrations: { [key: string]: SqlQuery | (() => SqlQuery) },
 ) => {
 	await database.query(sql`
 		CREATE TABLE IF NOT EXISTS ${new QueryIdentifier('Migrations')}(
@@ -24,7 +24,7 @@ export default async (
 		await database.sequence(async sequenceDb => {
 			await sequenceDb.query(sql`BEGIN;`);
 			try {
-				await sequenceDb.query(migrationQuery);
+				await sequenceDb.query(typeof migrationQuery === 'function' ? migrationQuery() : migrationQuery);
 				await sequenceDb.query(sql`
 					INSERT INTO ${new QueryIdentifier('Migrations')}
 					VALUES (${migrationName});
