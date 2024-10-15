@@ -35,7 +35,7 @@ export default class CrudRepository<Model, ValidAttributes = Model, PrimaryKeyTy
 		this.scope = scope;
 	}
 
-	public async get<T = Model>(primaryKeyValue: PrimaryKeyType, {postfix, select }:{postfix?: SqlQuery, select?: SqlQuery} ={}): Promise<T> {
+	public async get(primaryKeyValue: PrimaryKeyType, {postfix, select }:{postfix?: SqlQuery, select?: SqlQuery} ={}): Promise<Model> {
 		const filters: SqlQuery[] = [
 			sql`${new QueryIdentifier(this.primaryKey)} = ${primaryKeyValue}`,
 		];
@@ -61,10 +61,10 @@ export default class CrudRepository<Model, ValidAttributes = Model, PrimaryKeyTy
 			throw new TooManyResultsError(`Multiple objects found in table ${this.table} for ${this.primaryKey} = ${primaryKeyValue}`);
 		}
 
-		return this.createModelFromAttributes<T>(results[0]);
+		return this.createModelFromAttributes(results[0]);
 	}
 
-	public async search<T = Model>({from, postfix, where, orderBy, select }:{from?: SqlQuery, postfix?: SqlQuery, where?: SqlQuery, orderBy?: SqlQuery, select?: SqlQuery} ={} ): Promise<Array<T>> {
+	public async search({from, postfix, where, orderBy, select }:{from?: SqlQuery, postfix?: SqlQuery, where?: SqlQuery, orderBy?: SqlQuery, select?: SqlQuery} ={} ): Promise<Array<Model>> {
 		const filters: SqlQuery[] = [];
 		if (this.scope ) {
 			filters.push(sql`(${this.scope})`);
@@ -93,7 +93,7 @@ export default class CrudRepository<Model, ValidAttributes = Model, PrimaryKeyTy
 
 		return Promise.all(
 			results.map(
-				result => this.createModelFromAttributes<T>(result),
+				result => this.createModelFromAttributes(result),
 			),
 		);
 	}
@@ -172,7 +172,7 @@ export default class CrudRepository<Model, ValidAttributes = Model, PrimaryKeyTy
 		`);
 	}
 
-	protected async createModelFromAttributes<T = Model>(attributes: ValidAttributes|T): Promise<T> {
+	protected async createModelFromAttributes(attributes: ValidAttributes|Model): Promise<Model> {
 		const model = Object.create(this.model.prototype);
 		Object.assign(model, attributes);
 		return model;
