@@ -64,7 +64,7 @@ export default class CrudRepository<Model, ValidAttributes = Model, PrimaryKeyTy
 		return this.createModelFromAttributes(results[0]);
 	}
 
-	public async search({from, postfix, where, orderBy, select }:{from?: SqlQuery, postfix?: SqlQuery, where?: SqlQuery, orderBy?: SqlQuery, select?: SqlQuery} ={} ): Promise<Array<Model>> {
+	public async search({from, postfix, where, groupBy, orderBy, select }:{from?: SqlQuery, postfix?: SqlQuery, where?: SqlQuery, groupBy?: SqlQuery, orderBy?: SqlQuery, select?: SqlQuery} ={} ): Promise<Array<Model>> {
 		const filters: SqlQuery[] = [];
 		if (this.scope ) {
 			filters.push(sql`(${this.scope})`);
@@ -77,6 +77,8 @@ export default class CrudRepository<Model, ValidAttributes = Model, PrimaryKeyTy
 			? sql`WHERE ${SqlQuery.join(filters, sql` AND `)}` : sql``;
 		const orderByClause = orderBy
 			? sql`ORDER BY ${orderBy}`: sql``;
+		const groupByClause = groupBy
+			? sql`GROUP BY ${groupBy}`: sql``;
 		const postfixClause = postfix
 			? sql`${postfix}`:sql``;
 		const selectClause = select
@@ -88,6 +90,7 @@ export default class CrudRepository<Model, ValidAttributes = Model, PrimaryKeyTy
 			SELECT ${selectClause}
 			FROM ${fromClause} ${postfixClause}
 			${whereClause}
+			${groupByClause}
 			${orderByClause}
 		`);
 
